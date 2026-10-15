@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width,initial-scale=1" name="viewport"/>
+  <title>
+   Game Settings Calculator | LQ Tools
+  </title>
+  <link href="assets/css/site.css" rel="stylesheet"/>
+  <link href="assets/css/calculator.css" rel="stylesheet"/>
+  <link href="assets/css/motion.css" rel="stylesheet"/>
+  <script defer="" src="assets/js/calculator.js">
+  </script>
+   <script defer src="assets/js/site.js"></script>
+ </head>
+ <body>
+  <header class="site-header">
+   <div class="header-inner">
+    <a class="brand" href="home.html">
+     <span class="brand-mark">
+      LQ
+     </span>
+     <span class="brand-name">
+      LASERQUEST
+     </span>
+    </a>
+    <nav aria-label="Main navigation" class="site-nav">
+     <a href="home.html">
+      HOME
+     </a>
+     <a aria-current="page" href="lq-tools.html">
+      LQ TOOLS
+     </a>
+     <a href="instructions.html">
+      INSTRUCTIONS
+     </a>
+    </nav>
+   </div>
+  </header>
+  <main class="container">
+   <nav aria-label="Breadcrumb" class="breadcrumb">
+    <a href="home.html">
+     Home
+    </a>
+    /
+    <a href="lq-tools.html">
+     LQ Tools
+    </a>
+    /
+    <span aria-current="page">
+     Game Settings Calculator
+    </span>
+   </nav>
+   <div class="page-intro">
+    <span class="eyebrow">
+     LQ TOOLS / PRICING
+    </span>
+    <h1>
+     Game Settings Calculator
+    </h1>
+    <p class="lede">
+     Add all prizes loaded into a game. Their vending prices are combined to calculate one recommended machine setting.
+    </p>
+   </div>
+   <div class="calc-layout">
+    <section class="panel">
+     <div class="panel-header">
+      <h2>
+       Game parameters
+      </h2>
+      <p>
+       Enter game details and loaded prizes.
+      </p>
+     </div>
+     <form id="calculatorForm" novalidate="">
+      <h3 class="group-title">
+       GAME DETAILS
+      </h3>
+      <div class="form-group">
+       <label for="normalPrice">
+        NORMAL PRICE OF PLAY
+       </label>
+       <div class="help-container">
+        <button aria-controls="normalPriceHelp" aria-expanded="false" aria-label="About normal price of play" class="help-button" type="button">
+         ?
+        </button>
+        <div class="help-tooltip" id="normalPriceHelp">
+         <strong>
+          Normal Price of Play
+         </strong>
+         <p>
+          Enter the standard game price before VIP discounts. For a $3 game, enter $3.00.
+         </p>
+         <p>
+          The calculator automatically reduces this by 10% for the VIP play price.
+         </p>
+        </div>
+       </div>
+       <div class="input-wrap">
+        <span class="prefix">
+         $
+        </span>
+        <input id="normalPrice" min="0.01" required="" step="any" type="number" placeholder="3.00"/>
+        <span class="suffix">
+         AUD
+        </span>
+       </div>
+      </div>
+      <div class="form-group">
+       <label for="payoutPercentage">
+        DESIRED PAYOUT PERCENTAGE
+       </label>
+       <div class="help-container">
+        <button aria-controls="payoutHelp" aria-expanded="false" aria-label="About desired payout percentage" class="help-button" type="button">
+         ?
+        </button>
+        <div class="help-tooltip" id="payoutHelp">
+         <strong>
+          Desired Payout Percentage
+         </strong>
+         <p>
+          Enter the target portion of revenue allocated to prizes. For 30%, enter 30 (not 0.30).
+         </p>
+         <p>
+          The payout multiplier equals 100 divided by this percentage.
+         </p>
+        </div>
+       </div>
+       <div class="input-wrap">
+        <input class="percentage-input" id="payoutPercentage" max="100" min="0.01" required="" step="any" type="number" placeholder="30"/>
+        <span class="suffix">
+         %
+        </span>
+       </div>
+      </div>
+      <div class="prize-heading">
+       <h3>
+        LOADED PRIZES
+       </h3>
+       <span class="prize-count" id="prizeCount">
+        1 PRIZE
+       </span>
+      </div>
+      <p class="help-copy">
+       Enter the vending price of each prize. All prices are added together into one total.
+      </p>
+      <div class="prize-list" id="prizeList">
+      </div>
+      <button class="add-prize" id="addPrizeButton" type="button">
+       ＋ ADD ANOTHER PRIZE
+      </button>
+      <p class="error" hidden="" id="errorMessage" role="alert">
+      </p>
+      <div class="actions">
+       <button class="secondary-button" id="resetButton" type="button">
+        RESET
+       </button>
+      </div>
+     </form>
+    </section>
+    <section class="panel">
+     <div class="panel-header">
+      <h2>
+       Calculated setting
+      </h2>
+      <p>
+       One result for the whole machine.
+      </p>
+     </div>
+     <div class="result-banner">
+      <div class="result-label-row">
+       <span class="result-label">
+        RECOMMENDED GAME SETTING
+       </span>
+       <div class="help-container setting-help-container">
+        <button
+         type="button"
+         class="help-button"
+         aria-label="Explain recommended game setting"
+         aria-controls="settingHelp"
+         aria-expanded="false"
+        >
+         ?
+        </button>
+        <div class="help-tooltip" id="settingHelp" role="tooltip">
+         <strong>What does this setting mean?</strong>
+         <p>
+          This is the target average number of paid plays needed
+          for the machine to award a prize from the loaded prize pool.
+         </p>
+         <p>
+          For example, a setting of <b>12</b> means the game is
+          configured to award approximately one prize for every
+          12 plays on average.
+         </p>
+         <p>
+          It does not guarantee a prize on exactly the 12th play.
+          Actual results depend on the machine's settings and gameplay.
+         </p>
+        </div>
+       </div>
+      </div>
+      <div aria-live="polite" class="result-value" id="settingsValue">
+       11
+      </div>
+      <p class="rounding-note">
+       Decimal &le; 0.30 rounds down; decimal &gt; 0.30 rounds up.
+      </p>
+     </div>
+     <div class="breakdown">
+      <div class="breakdown-row">
+       <div>
+        <span>
+         TOTAL VENDING PRICE
+        </span>
+        <small>
+         All prizes combined
+        </small>
+       </div>
+       <strong id="totalVendingPrice">
+        $9.00
+       </strong>
+      </div>
+      <div class="breakdown-row">
+       <div>
+        <span>
+         VIP PRICE OF PLAY
+        </span>
+        <small>
+         Normal price &times; 0.90
+        </small>
+       </div>
+       <strong id="vipPrice">
+        $2.70
+       </strong>
+      </div>
+      <div class="breakdown-row">
+       <div>
+        <span>
+         PAYOUT MULTIPLIER
+        </span>
+        <small>
+         100 &divide; payout percentage
+        </small>
+       </div>
+       <strong id="payoutMultiplier">
+        3.33&times;
+       </strong>
+      </div>
+      <div class="breakdown-row">
+       <div>
+        <span>
+         UNROUNDED SETTING
+        </span>
+        <small>
+         Before custom rounding
+        </small>
+       </div>
+       <strong id="rawSetting">
+        11.11
+       </strong>
+      </div>
+     </div>
+     <div class="prize-summary">
+      <h3>
+       LOADED PRIZE BREAKDOWN
+      </h3>
+      <div id="prizeSummaryList">
+      </div>
+     </div>
+    </section>
+   </div>
+   <section class="formula">
+    <div class="formula-heading">
+     <span class="formula-eyebrow">
+      HOW IT WORKS
+     </span>
+     <h2>
+      How it's calculated
+     </h2>
+     <p>
+      All loaded prizes contribute to one combined vending price.
+     </p>
+    </div>
+    <div aria-label="Game setting equals total vending price multiplied by payout multiplier, divided by VIP price of play" class="formula-display">
+     <div class="formula-fraction">
+      <div class="formula-numerator">
+       <span>
+        Total Vending Price
+       </span>
+       <span class="formula-symbol">
+        &times;
+       </span>
+       <span>
+        Payout Multiplier
+       </span>
+      </div>
+      <div class="formula-denominator">
+       VIP Price of Play
+      </div>
+     </div>
+     <span aria-hidden="true" class="formula-equals">
+      =
+     </span>
+     <span class="formula-answer">
+      Game Setting
+     </span>
+    </div>
+    <div class="formula-details">
+     <div class="formula-detail">
+      <strong>
+       Payout multiplier
+      </strong>
+      <span>
+       100 &divide; desired payout percentage
+      </span>
+     </div>
+     <div class="formula-detail">
+      <strong>
+       VIP play price
+      </strong>
+      <span>
+       Normal play price &times; 0.90
+      </span>
+     </div>
+     <div class="formula-detail">
+      <strong>
+       Custom rounding
+      </strong>
+      <span>
+       Decimal &le; 0.30 rounds down; above 0.30 rounds up.
+      </span>
+     </div>
+    </div>
+   </section>
+   <a class="back-link" href="lq-tools.html">
+    &larr; Back to LQ Tools
+   </a>
+  </main>
+  <template id="prizeEntryTemplate">
+   <div class="prize-entry">
+    <div class="prize-top">
+     <span class="prize-index">
+      PRIZE
+     </span>
+     <button aria-label="Remove prize" class="remove-prize" type="button">
+      REMOVE &times;
+     </button>
+    </div>
+    <div class="form-group">
+     <label class="prize-name-label">
+      PRIZE NAME
+     </label>
+     <input class="prize-name" maxlength="80" placeholder="e.g. Plush Toy" type="text"/>
+    </div>
+    <div class="form-group">
+     <label class="prize-price-label">
+      PRIZE VENDING PRICE
+     </label>
+     <div class="help-container">
+      <button aria-expanded="false" aria-label="About prize vending price" class="help-button" type="button">
+       ?
+      </button>
+      <div class="help-tooltip">
+       <strong>
+        How to calculate vending price
+       </strong>
+       <p>
+        Add a
+        <b>
+         30% markup
+        </b>
+        to the original cost of the prize.
+       </p>
+       <p>
+        <b>
+         Formula:
+        </b>
+        Prize Cost &times; 1.30 = Vending Price.
+       </p>
+       <p>
+        <b>
+         Example:
+        </b>
+        A prize costing $10.00 has a vending price of
+        <b>
+         $13.00
+        </b>
+        .
+       </p>
+       <p>
+        Enter the final vending price, not the original prize cost. The calculator does not add the markup for you.
+       </p>
+      </div>
+     </div>
+     <div class="input-wrap">
+      <span class="prefix">
+       $
+      </span>
+      <input class="prize-price" min="0" placeholder="0.00" required="" step="any" type="number"/>
+      <span class="suffix">
+       AUD
+      </span>
+     </div>
+    </div>
+   </div>
+  </template>
+  <footer class="footer">
+   <div class="footer-inner">
+    <strong>
+     LASERQUEST &middot; LQ HUB
+    </strong>
+    <span>
+     Internal operations resources
+    </span>
+   </div>
+  </footer>
+ </body>
+</html>
+

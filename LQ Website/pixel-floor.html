@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Floor Chart | LQ Tools</title>
+    <link rel="stylesheet" href="assets/css/site.css">
+    <link rel="stylesheet" href="assets/css/motion.css">
+    <link rel="stylesheet" href="assets/css/pixel-floor.css">
+    <script src="assets/js/site.js" defer></script>
+    <script src="assets/js/pixel-floor.js" defer></script>
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <a class="brand" href="home.html">
+                <span class="brand-mark">LQ</span>
+                <span class="brand-name">LASERQUEST</span>
+            </a>
+            <nav class="site-nav" aria-label="Main navigation">
+                <a href="home.html">HOME</a>
+                <a href="lq-tools.html" aria-current="page">LQ TOOLS</a>
+                <a href="instructions.html">INSTRUCTIONS</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container pixel-page">
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="home.html">Home</a>
+            <span aria-hidden="true">/</span>
+            <a href="lq-tools.html">LQ Tools</a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">Pixel Floor Chart</span>
+        </nav>
+
+        <div class="page-intro">
+            <span class="eyebrow">LQ TOOLS / FLOOR MAINTENANCE</span>
+            <h1>Pixel Floor Chart</h1>
+            <p class="lede">
+                Track the condition and replacement history of all 270 floor tiles.
+                View the live shared floor chart. Edit tiles, then submit your changes with your name so everyone can see the update.
+            </p>
+        </div>
+
+        <section class="floor-panel" aria-labelledby="floor-heading">
+            <div class="floor-panel-header">
+                <div>
+                    <span class="section-overline">FLOOR LAYOUT / A–O × 1–18</span>
+                    <h2 id="floor-heading">Tile condition map</h2>
+                    <p>Choose a tile to stage a change. Nothing goes live until you submit your update.</p>
+                </div>
+                <div class="floor-actions">
+                    <span id="saveStatus" class="save-status" role="status" aria-live="polite">Connecting to shared floor…</span>
+                    <button id="resetFloor" class="outline-action" type="button">Mark all Healthy</button>
+                </div>
+            </div>
+
+            <div class="floor-scroll" tabindex="0" aria-label="Pixel floor grid. Scroll horizontally on small screens.">
+                <div id="floorGrid" class="floor-grid" role="group" aria-label="Floor tiles, columns A through O and rows 1 through 18"></div>
+            </div>
+            <p class="floor-hint">A–O are columns; 1–18 are rows. On phones, swipe the map sideways to see all columns.</p>
+        </section>
+
+        <section class="floor-panel summary-panel" aria-labelledby="legend-heading">
+            <div class="floor-panel-header">
+                <div>
+                    <span class="section-overline">LIVE OVERVIEW</span>
+                    <h2 id="legend-heading">Status key &amp; tile counts</h2>
+                    <p>Colours and patterns show tile condition and replacement history.</p>
+                </div>
+                <div class="total-chip"><strong id="totalTiles">270</strong><span>total tiles</span></div>
+            </div>
+            <div id="statusLegend" class="status-legend" aria-label="Status key and live counts"></div>
+            <p class="save-note">This chart is stored on the LQ Hub server and shared across devices. Pending edits are not published until you submit them.</p>
+        </section>
+
+        <section class="floor-panel submission-panel" aria-labelledby="submission-heading">
+            <div class="floor-panel-header">
+                <div>
+                    <span class="section-overline">PUBLISH CHANGES</span>
+                    <h2 id="submission-heading">Update the shared floor</h2>
+                    <p>Changes are only made public when you submit them with your name.</p>
+                </div>
+                <strong id="pendingCount" class="total-chip">0 pending</strong>
+            </div>
+            <div class="publish-controls">
+                <div class="publish-field">
+                    <label for="editorName">Your name <span aria-hidden="true">*</span></label>
+                    <input id="editorName" type="text" maxlength="70" autocomplete="name" placeholder="Enter your name" required>
+                </div>
+                <div class="publish-field" id="editorCodeWrap" hidden>
+                    <label for="editorCode">Editor access code</label>
+                    <input id="editorCode" type="password" autocomplete="off" placeholder="Access code (if required)">
+                </div>
+                <button id="publishFloor" class="publish-action" type="button" disabled>Publish floor update</button>
+                <button id="discardDraft" class="outline-action" type="button" disabled>Discard draft</button>
+            </div>
+            <p id="publishMessage" class="publish-message" role="status" aria-live="polite"></p>
+        </section>
+
+        <section class="floor-panel history-panel" aria-labelledby="history-heading">
+            <div class="floor-panel-header">
+                <div>
+                    <span class="section-overline">AUDIT TRAIL</span>
+                    <h2 id="history-heading">Floor update history</h2>
+                    <p>Who submitted changes, when they did so, and which tiles changed.</p>
+                </div>
+                <button id="refreshFloor" class="outline-action" type="button">Refresh</button>
+            </div>
+            <div id="floorHistory" class="floor-history" aria-live="polite">Loading update history…</div>
+        </section>
+    </main>
+
+    <div id="tileEditor" class="tile-editor" hidden aria-labelledby="editorTitle">
+        <div class="editor-topline">
+            <div>
+                <span class="editor-kicker">EDIT TILE</span>
+                <h3 id="editorTitle">Tile A1</h3>
+            </div>
+            <button type="button" id="closeEditor" class="close-editor" aria-label="Close tile options">×</button>
+        </div>
+        <p class="editor-caption">Choose the tile's current status:</p>
+        <div id="editorOptions" class="editor-options" role="group" aria-label="Tile status choices"></div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-inner">
+            <strong>LASERQUEST · LQ HUB</strong>
+            <span>Internal operations resources</span>
+        </div>
+    </footer>
+</body>
+</html>
