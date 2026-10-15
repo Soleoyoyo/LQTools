@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Average Ticket Payout Calculator | LQ Tools</title>
+
+    <link rel="stylesheet" href="assets/css/site.css">
+    <link rel="stylesheet" href="assets/css/average-ticket-payout.css">
+    <link rel="stylesheet" href="assets/css/motion.css">
+
+    <script src="assets/js/site.js" defer></script>
+    <script src="assets/js/average-ticket-payout.js" defer></script>
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <a class="brand" href="index.html">
+                <span class="brand-mark">LQ</span>
+                <span class="brand-name">LASERQUEST</span>
+            </a>
+
+            <nav class="site-nav" aria-label="Main navigation">
+                <a href="index.html">HOME</a>
+                <a href="lq-tools.html" aria-current="page">LQ TOOLS</a>
+                <a href="instructions.html">INSTRUCTIONS</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="index.html">Home</a>
+            <span aria-hidden="true">/</span>
+            <a href="lq-tools.html">LQ Tools</a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">Average Ticket Payout Calculator</span>
+        </nav>
+
+        <div class="page-intro">
+            <span class="eyebrow">LQ TOOLS / GAME TESTING</span>
+            <h1>Average Ticket Payout Calculator</h1>
+            <p class="lede">
+                Record how many tickets you win each time you test a game.
+                Calculate the average tickets per play and the ticket payout
+                percentage relative to the play price.
+            </p>
+        </div>
+
+        <div class="payout-layout">
+            <section class="panel payout-panel" aria-labelledby="testing-title">
+                <div class="payout-panel-heading">
+                    <span class="payout-step">01</span>
+                    <div>
+                        <h2 id="testing-title">Test results</h2>
+                        <p>Enter the price of one play, then record each result.</p>
+                    </div>
+                </div>
+
+                <form id="payoutForm" novalidate>
+                    <div class="payout-field">
+                        <label for="gameName">GAME NAME</label>
+                        <div class="payout-help">
+                            <button type="button" class="payout-help-button"
+                                aria-label="Explain game name" aria-expanded="false"
+                                aria-controls="helpGameName">?</button>
+                            <div class="payout-tooltip" id="helpGameName" role="tooltip">
+                                <strong>Game name</strong>
+                                <p>Enter the name of the arcade game you are testing.</p>
+                                <p>This appears at the top of your exported PDF report.</p>
+                            </div>
+                        </div>
+                        <input type="text" id="gameName" class="payout-text-input"
+                            maxlength="100" placeholder="e.g. Ticket Monster"  autocomplete="off">
+                    </div>
+
+                    <div class="payout-field">
+                        <label for="playPrice">NORMAL PRICE OF PLAY</label>
+                        <div class="payout-help">
+                            <button type="button" class="payout-help-button"
+                                aria-label="Explain price of play"
+                                aria-expanded="false" aria-controls="helpPlayPrice">?</button>
+                            <div class="payout-tooltip" id="helpPlayPrice" role="tooltip">
+                                <strong>Price of play</strong>
+                                <p>Enter the amount charged for one game, in Australian dollars.</p>
+                                <p>If a game costs $2.00 per play, enter 2. This is used to calculate ticket payout percentage.</p>
+                            </div>
+                        </div>
+                        <div class="payout-money-input">
+                            <span aria-hidden="true">$</span>
+                            <input type="number" id="playPrice" min="0.01" step="any"
+                                inputmode="decimal" placeholder="3.00" required>
+                            <span class="input-unit">AUD</span>
+                        </div>
+                    </div>
+
+                    <div class="payout-field">
+                        <label for="playCount">NUMBER OF TEST PLAYS</label>
+                        <div class="payout-help">
+                            <button type="button" class="payout-help-button"
+                                aria-label="Explain number of test plays"
+                                aria-expanded="false" aria-controls="helpPlayCount">?</button>
+                            <div class="payout-tooltip" id="helpPlayCount" role="tooltip">
+                                <strong>Number of test plays</strong>
+                                <p>How many times you tested the game. One ticket-entry row appears for every play.</p>
+                                <p>You can change this number or use the + Add Play button to record more tests.</p>
+                            </div>
+                        </div>
+                        <div class="payout-number-input">
+                            <input type="number" id="playCount" min="1" max="250" step="1"
+                                inputmode="numeric" value="5" required>
+                            <span class="input-unit">PLAYS</span>
+                        </div>
+                    </div>
+
+                    <div class="test-list-header">
+                        <h3>TICKETS WON PER PLAY</h3>
+                        <div class="payout-help">
+                            <button type="button" class="payout-help-button"
+                                aria-label="Explain tickets won per play"
+                                aria-expanded="false" aria-controls="helpTickets">?</button>
+                            <div class="payout-tooltip" id="helpTickets" role="tooltip">
+                                <strong>Tickets won per play</strong>
+                                <p>Enter the actual number of tickets awarded on each test run, including zero if no tickets were won.</p>
+                                <p>The average is the total tickets won divided by the number of test plays.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="ticketEntries" class="ticket-entries"></div>
+
+                    <button type="button" id="addPlayButton" class="add-play-button">
+                        <span aria-hidden="true">+</span> ADD PLAY
+                    </button>
+
+                    <p id="payoutError" class="payout-error" role="alert" hidden></p>
+
+                    <div class="payout-form-actions">
+                        <button type="button" id="resetPayout" class="payout-reset-button">RESET</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="panel payout-results" aria-labelledby="results-title">
+                <div class="payout-panel-heading">
+                    <span class="payout-step red-step">02</span>
+                    <div>
+                        <h2 id="results-title">Calculated payout</h2>
+                        <p>Based on a ticket value of $0.01 AUD.</p>
+                    </div>
+                </div>
+
+                <div class="payout-hero-results" aria-live="polite">
+                    <div class="payout-hero-result">
+                        <span>AVERAGE TICKETS PER PLAY</span>
+                        <strong id="averageTickets">30</strong>
+                        <small>Total tickets divided by test plays</small>
+                    </div>
+                    <div class="payout-hero-result alternate">
+                        <span>TICKET PAYOUT PERCENTAGE</span>
+                        <strong id="payoutPercentage">15.00%</strong>
+                        <small>Average ticket value ÷ play price × 100</small>
+                    </div>
+                </div>
+
+                <div class="payout-breakdown">
+                    <div class="payout-breakdown-row">
+                        <span>Number of test plays</span>
+                        <strong id="resultPlays">3</strong>
+                    </div>
+                    <div class="payout-breakdown-row">
+                        <span>Total tickets won</span>
+                        <strong id="totalTickets">90</strong>
+                    </div>
+                    <div class="payout-breakdown-row">
+                        <span>Average ticket value per play</span>
+                        <strong id="averageValue">$0.30</strong>
+                    </div>
+                    <div class="payout-breakdown-row">
+                        <span>Price of play</span>
+                        <strong id="resultPrice">$2.00</strong>
+                    </div>
+                    <div class="payout-breakdown-row">
+                        <span>Total test revenue</span>
+                        <strong id="totalRevenue">$6.00</strong>
+                    </div>
+                    <div class="payout-breakdown-row">
+                        <span>Total ticket value awarded</span>
+                        <strong id="totalTicketValue">$0.90</strong>
+                    </div>
+                </div>
+
+                <button type="button" id="exportPdfButton" class="payout-export-button">
+                    <span aria-hidden="true">&#8681;</span> EXPORT FINDINGS AS PDF
+                </button>
+                <p class="payout-export-hint">
+                    Opens your browser's print window. Choose <strong>Save as PDF</strong>
+                    to keep a report containing every test play.
+                </p>
+
+                <p class="payout-footnote">
+                    This measures payout using tickets awarded during testing.
+                    It is not a guarantee of the game's long-term payout rate.
+                </p>
+            </section>
+        </div>
+
+        <section class="payout-formula" aria-labelledby="formula-title">
+            <span class="eyebrow">HOW IT WORKS</span>
+            <h2 id="formula-title">The calculation</h2>
+            <div class="payout-formula-card">
+                <div class="formula-item">
+                    <h3>Average tickets per play</h3>
+                    <div class="math-fraction">
+                        <span>Total Tickets Won</span>
+                        <span>Number of Plays</span>
+                    </div>
+                </div>
+                <div class="formula-item">
+                    <h3>Ticket payout percentage</h3>
+                    <div class="math-expression">
+                        <div class="math-fraction">
+                            <span>Average Tickets × $0.01</span>
+                            <span>Price of Play (AUD)</span>
+                        </div>
+                        <span>× 100%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Print-only report, filled using the current test results. -->
+    <article id="payoutPrintReport" class="payout-print-report" aria-label="Ticket payout test report">
+        <header class="print-report-header">
+            <div class="print-report-brand">LQ <span>LASERQUEST / TEST REPORT</span></div>
+            <h1>Average Ticket Payout Report</h1>
+            <h2 id="reportGameName"></h2>
+            <p id="reportDate"></p>
+        </header>
+
+        <section class="print-report-summary">
+            <div><span>Play price</span><strong id="reportPlayPrice"></strong></div>
+            <div><span>Test plays</span><strong id="reportPlayCount"></strong></div>
+            <div><span>Total tickets won</span><strong id="reportTotalTickets"></strong></div>
+            <div><span>Average tickets / play</span><strong id="reportAverageTickets"></strong></div>
+            <div><span>Average ticket value / play</span><strong id="reportAverageValue"></strong></div>
+            <div><span>Ticket payout percentage</span><strong id="reportPayoutPercentage"></strong></div>
+            <div><span>Total test revenue</span><strong id="reportRevenue"></strong></div>
+            <div><span>Total prize value</span><strong id="reportTicketValue"></strong></div>
+        </section>
+
+        <section class="print-report-results">
+            <h3>Ticket winnings — every play</h3>
+            <table>
+                <thead><tr><th scope="col">Play</th><th scope="col">Tickets won</th><th scope="col">Ticket value (AUD)</th></tr></thead>
+                <tbody id="reportTicketRows"></tbody>
+            </table>
+        </section>
+        <p class="print-report-footer">
+            Ticket value: $0.01 AUD each. Payout % = (average tickets × $0.01 ÷ play price) × 100.
+            Testing results are indicative, not a guarantee of long-term performance.
+        </p>
+    </article>
+
+    <template id="ticketEntryTemplate">
+        <div class="ticket-entry">
+            <label class="ticket-entry-label">PLAY</label>
+            <div class="payout-number-input">
+                <input class="ticket-input" type="number" min="0" step="1"
+                    inputmode="numeric" placeholder="Tickets won" required>
+                <span class="input-unit">TICKETS</span>
+            </div>
+        </div>
+    </template>
+
+    <footer class="footer">
+        <div class="footer-inner">
+            <strong>LASERQUEST · LQ HUB</strong>
+            <span>Internal operations resources</span>
+        </div>
+    </footer>
+</body>
+</html>

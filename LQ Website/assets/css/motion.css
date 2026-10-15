@@ -1,0 +1,165 @@
+/*
+ * LQ Hub — shared interaction and motion system
+ * Short, understated effects designed to preserve readability.
+ * Respects the operating system's reduced-motion preference.
+ */
+
+:root {
+    --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --motion-fast: 180ms;
+    --motion-normal: 360ms;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    /* Gentle entrances when navigating between pages. */
+    .page-intro {
+        animation: lq-enter 480ms var(--motion-ease) both;
+    }
+
+    .breadcrumb {
+        animation: lq-enter 360ms var(--motion-ease) both;
+    }
+
+    .intro-strip,
+    .section-title {
+        animation: lq-enter 520ms var(--motion-ease) 70ms both;
+    }
+
+    .calc-layout > .panel:first-child {
+        animation: lq-enter 520ms var(--motion-ease) 90ms both;
+    }
+
+    .calc-layout > .panel:nth-child(2) {
+        animation: lq-enter 520ms var(--motion-ease) 160ms both;
+    }
+
+    /* Cards stagger on initial load and react softly to the pointer. */
+    .tile-grid > .tile {
+        animation: lq-enter 520ms var(--motion-ease) both;
+        transition:
+            transform var(--motion-normal) var(--motion-ease),
+            border-color var(--motion-fast) ease,
+            box-shadow var(--motion-normal) ease;
+    }
+
+    .tile-grid > .tile:nth-child(1) { animation-delay: 110ms; }
+    .tile-grid > .tile:nth-child(2) { animation-delay: 170ms; }
+    .tile-grid > .tile:nth-child(3) { animation-delay: 230ms; }
+    .tile-grid > .tile:nth-child(4) { animation-delay: 290ms; }
+
+    @media (hover: hover) {
+        a.tile:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 28px rgba(20, 20, 20, 0.08);
+        }
+
+        a.tile:hover .tile-icon {
+            transform: scale(1.06);
+        }
+    }
+
+    .tile-icon {
+        transition: transform var(--motion-normal) var(--motion-ease);
+    }
+
+    .site-nav a,
+    .back-link,
+    .primary-button,
+    .secondary-button,
+    .add-prize,
+    .remove-prize,
+    .help-button {
+        transition:
+            background-color var(--motion-fast) ease,
+            border-color var(--motion-fast) ease,
+            color var(--motion-fast) ease,
+            transform var(--motion-fast) var(--motion-ease);
+    }
+
+    @media (hover: hover) {
+        .primary-button:hover,
+        .add-prize:hover {
+            transform: translateY(-2px);
+        }
+
+        .site-nav a:hover {
+            transform: translateY(-1px);
+        }
+    }
+
+    .primary-button:active,
+    .secondary-button:active,
+    .add-prize:active {
+        transform: translateY(0) scale(0.99);
+    }
+
+    .input-wrap input,
+    .prize-name {
+        transition:
+            background-color var(--motion-fast) ease,
+            border-color var(--motion-fast) ease,
+            box-shadow var(--motion-fast) ease;
+    }
+
+    .input-wrap input:focus,
+    .prize-name:focus {
+        box-shadow: 0 0 0 3px rgba(227, 27, 35, 0.11);
+    }
+
+    /* Only animate as elements arrive if a browser supports observing them. */
+    .motion-pending {
+        opacity: 0;
+        transform: translateY(13px);
+        transition:
+            opacity 500ms var(--motion-ease),
+            transform 500ms var(--motion-ease);
+    }
+
+    .motion-pending.motion-visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* A prize row enters without moving the rest of the form dramatically. */
+    .prize-entry.is-new {
+        animation: lq-prize-in 340ms var(--motion-ease) both;
+    }
+
+    /* One small confirmation pulse when a valid setting actually changes. */
+    .result-value.value-updated {
+        animation: lq-value-pop 280ms var(--motion-ease);
+    }
+
+    @keyframes lq-enter {
+        from { opacity: 0; transform: translateY(12px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes lq-prize-in {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes lq-value-pop {
+        0% { opacity: 0.72; transform: scale(0.975); }
+        100% { opacity: 1; transform: scale(1); }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .page-intro,
+    .breadcrumb,
+    .intro-strip,
+    .section-title,
+    .calc-layout > .panel,
+    .tile-grid > .tile,
+    .prize-entry,
+    .result-value {
+        animation: none !important;
+    }
+
+    .motion-pending {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+}
