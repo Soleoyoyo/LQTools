@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Price Calculator | LQ Tools</title>
+
+    <link rel="stylesheet" href="assets/css/site.css">
+    <link rel="stylesheet" href="assets/css/stock-price.css">
+    <link rel="stylesheet" href="assets/css/motion.css">
+
+    <script src="assets/js/site.js" defer></script>
+    <script src="assets/js/stock-price.js" defer></script>
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <a class="brand" href="index.html">
+                <span class="brand-mark">LQ</span>
+                <span class="brand-name">LASERQUEST</span>
+            </a>
+
+            <nav class="site-nav" aria-label="Main navigation">
+                <a href="index.html">HOME</a>
+                <a href="lq-tools.html" aria-current="page">LQ TOOLS</a>
+                <a href="instructions.html">INSTRUCTIONS</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="index.html">Home</a>
+            <span aria-hidden="true">/</span>
+            <a href="lq-tools.html">LQ Tools</a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">Stock Price Calculator</span>
+        </nav>
+
+        <div class="page-intro">
+            <span class="eyebrow">LQ TOOLS / STOCK PRICING</span>
+            <h1>Stock Price Calculator</h1>
+            <p class="lede">
+                Convert stock purchases to AUD, work out the cost of a single item from a bulk pack,
+                and calculate vending and ticket prices.
+            </p>
+        </div>
+
+        <div class="stock-layout">
+            <section class="panel stock-input-panel" aria-labelledby="stock-input-title">
+                <div class="stock-panel-header">
+                    <span class="stock-heading-number">01</span>
+                    <div>
+                        <h2 id="stock-input-title">Purchase details</h2>
+                        <p>Enter the total amount paid for the stock.</p>
+                    </div>
+                </div>
+
+                <form id="stockPriceForm" novalidate>
+                    <div class="stock-field">
+                        <label for="itemName">ITEM NAME <span class="optional">OPTIONAL</span></label>
+                        <div class="stock-help">
+                            <button type="button" class="stock-help-button" aria-label="Help with item name" aria-expanded="false" aria-controls="helpItemName">?</button>
+                            <div class="stock-tooltip" id="helpItemName" role="tooltip">
+                                <strong>Item name</strong>
+                                <p>Use a descriptive name to identify the stock item in the results. This field is optional and does not affect the price.</p>
+                            </div>
+                        </div>
+                        <input id="itemName" type="text" placeholder="e.g. Plush Toy" maxlength="100" autocomplete="off">
+                    </div>
+
+                    <div class="stock-two-col">
+                        <div class="stock-field">
+                            <label for="purchasePrice">TOTAL PURCHASE PRICE</label>
+                            <div class="stock-help">
+                                <button type="button" class="stock-help-button" aria-label="Help with purchase price" aria-expanded="false" aria-controls="helpPurchasePrice">?</button>
+                                <div class="stock-tooltip" id="helpPurchasePrice" role="tooltip">
+                                    <strong>Total purchase price</strong>
+                                    <p>Enter the total amount paid for the item or full pack, before splitting by quantity.</p>
+                                    <p>For example, if a pack of five costs $20, enter 20 here and 5 under quantity.</p>
+                                </div>
+                            </div>
+                            <div class="stock-input-with-prefix">
+                                <span id="currencySymbol" aria-hidden="true">$</span>
+                                <input id="purchasePrice" type="number" min="0.01" step="any" placeholder="e.g. 20.00" inputmode="decimal" required>
+                            </div>
+                        </div>
+
+                        <div class="stock-field">
+                            <label for="purchaseCurrency">PURCHASE CURRENCY</label>
+                            <div class="stock-help">
+                                <button type="button" class="stock-help-button" aria-label="Help with purchase currency" aria-expanded="false" aria-controls="helpCurrency">?</button>
+                                <div class="stock-tooltip" id="helpCurrency" role="tooltip">
+                                    <strong>Purchase currency</strong>
+                                    <p>Choose the currency you were charged in. AUD is the default.</p>
+                                    <p>USD, GBP and EUR are converted into AUD before calculating prices. You can adjust the exchange rate if needed.</p>
+                                </div>
+                            </div>
+                            <div class="stock-select-wrap">
+                                <select id="purchaseCurrency">
+                                    <option value="AUD" selected>AUD — Australian dollar</option>
+                                    <option value="USD">USD — US dollar</option>
+                                    <option value="GBP">GBP — British pound</option>
+                                    <option value="EUR">EUR — Euro</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="stock-field shipping-field">
+                        <label for="shippingCost">SHIPPING COST</label>
+                        <div class="stock-help">
+                            <button type="button" class="stock-help-button" aria-label="Help with shipping cost" aria-expanded="false" aria-controls="helpShipping">?</button>
+                            <div class="stock-tooltip" id="helpShipping" role="tooltip">
+                                <strong>Shipping cost</strong>
+                                <p>Enter the shipping charged for this entire purchase or pack, in the same currency as the purchase price.</p>
+                                <p>Shipping is added once to the purchase total, converted to AUD if necessary, and divided across all items in the pack.</p>
+                                <p>Leave this at zero if shipping is free or already included in the purchase price.</p>
+                            </div>
+                        </div>
+                        <div class="stock-input-with-prefix">
+                            <span id="shippingCurrencySymbol" aria-hidden="true">$</span>
+                            <input id="shippingCost" type="number" min="0" step="any" placeholder="0.00" inputmode="decimal" required>
+                        </div>
+                    </div>
+
+                    <div class="stock-field quantity-field">
+                        <label for="packQuantity">NUMBER OF ITEMS IN PACK</label>
+                        <div class="stock-help">
+                            <button type="button" class="stock-help-button" aria-label="Help with pack quantity" aria-expanded="false" aria-controls="helpQuantity">?</button>
+                            <div class="stock-tooltip" id="helpQuantity" role="tooltip">
+                                <strong>Pack quantity</strong>
+                                <p>Enter how many individual stock items come in the full purchase.</p>
+                                <p>For a single item enter 1. A $20 pack containing 5 items costs $4 per item before pricing multipliers.</p>
+                            </div>
+                        </div>
+                        <div class="stock-input-with-suffix">
+                            <input id="packQuantity" type="number" min="1" step="1" placeholder="e.g. 5" required>
+                            <span>ITEMS</span>
+                        </div>
+                    </div>
+
+                    <div class="exchange-panel" id="exchangePanel" hidden>
+                        <div class="exchange-heading">
+                            <div>
+                                <h3>Currency conversion</h3>
+                                <p id="exchangeStatus" role="status" aria-live="polite">Checking exchange rate…</p>
+                            </div>
+                            <button id="refreshRate" class="refresh-rate" type="button">↻ Refresh</button>
+                        </div>
+                        <div class="stock-field exchange-rate-field">
+                            <label for="exchangeRate">AUD PER 1 FOREIGN CURRENCY UNIT</label>
+                            <div class="stock-help">
+                                <button type="button" class="stock-help-button" aria-label="Help with exchange rate" aria-expanded="false" aria-controls="helpExchange">?</button>
+                                <div class="stock-tooltip" id="helpExchange" role="tooltip">
+                                    <strong>Exchange rate</strong>
+                                    <p>How many Australian dollars equal one unit of the selected foreign currency.</p>
+                                    <p>For example, if 1 USD equals 1.50 AUD, enter 1.50. The rate loads automatically when available, but you can edit it.</p>
+                                </div>
+                            </div>
+                            <input id="exchangeRate" type="number" min="0.000001" step="any" placeholder="Waiting for rate…" inputmode="decimal">
+                            <p class="stock-field-note">Use your actual bank or supplier rate if it differs from the reference rate.</p>
+                        </div>
+                    </div>
+
+                    <p class="stock-error" id="stockError" role="alert" hidden></p>
+
+                    <div class="stock-actions">
+                        <button type="button" id="stockReset" class="stock-reset-button">RESET</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="panel stock-results-panel" aria-labelledby="stock-results-title">
+                <div class="stock-panel-header">
+                    <span class="stock-heading-number red-number">02</span>
+                    <div>
+                        <h2 id="stock-results-title">Calculated prices</h2>
+                        <p id="resultItemName">Per-item prices in Australian dollars.</p>
+                    </div>
+                </div>
+
+                <div class="stock-main-results" aria-live="polite">
+                    <div class="stock-big-result">
+                        <span>VENDING PRICE / ITEM</span>
+                        <strong id="vendingResult">$5.20</strong>
+                        <small>Unit cost in AUD × 1.30 · rounded to $0.10</small>
+                    </div>
+                    <div class="stock-big-result ticket-result">
+                        <span>TICKET PRICE / ITEM</span>
+                        <strong id="ticketResult">660</strong>
+                        <small>Unit cost in AUD × 165 · tiered ticket rounding</small>
+                    </div>
+                </div>
+
+                <div class="stock-breakdown">
+                    <h3>PURCHASE BREAKDOWN</h3>
+                    <div class="stock-detail-row">
+                        <div><span>Original purchase price</span><small>Full pack, source currency</small></div>
+                        <strong id="originalResult">A$20.00</strong>
+                    </div>
+                    <div class="stock-detail-row">
+                        <div><span>Shipping cost</span><small>Full-pack shipping, purchase currency</small></div>
+                        <strong id="shippingResult">$0.00</strong>
+                    </div>
+                    <div class="stock-detail-row">
+                        <div><span>Total landed cost in AUD</span><small>Purchase + shipping, converted to AUD</small></div>
+                        <strong id="convertedResult">$20.00</strong>
+                    </div>
+                    <div class="stock-detail-row">
+                        <div><span>Pack quantity</span><small>Number of items purchased</small></div>
+                        <strong id="quantityResult">5</strong>
+                    </div>
+                    <div class="stock-detail-row emphasis-row">
+                        <div><span>Purchase cost per item</span><small>Purchase + shipping ÷ pack quantity</small></div>
+                        <strong id="unitCostResult">$4.00</strong>
+                    </div>
+                </div>
+
+                <p class="stock-result-note">
+                    All displayed AUD prices are rounded to the nearest 10 cents. Tickets are rounded
+                    to the nearest 10 below 500, nearest 50 from 500 to 2,500,
+                    and nearest 100 above 2,500. Calculations use the unrounded per-item cost.
+                </p>
+            </section>
+        </div>
+
+        <section class="stock-formula-section" aria-labelledby="stock-formula-title">
+            <span class="eyebrow">HOW IT WORKS</span>
+            <h2 id="stock-formula-title">The calculation</h2>
+            <div class="stock-formula-grid">
+                <div class="stock-formula-card">
+                    <span class="formula-step">01 / CONVERT</span>
+                    <h3>Purchase price in AUD</h3>
+                    <div class="math-display">(Purchase total + shipping) × AUD exchange rate</div>
+                    <p>Shipping is entered in the purchase currency and added before conversion. AUD purchases have a conversion rate of 1.</p>
+                </div>
+                <div class="stock-formula-card">
+                    <span class="formula-step">02 / SPLIT</span>
+                    <h3>Single-item purchase cost</h3>
+                    <div class="math-display fraction-display">
+                        <span>Total landed cost in AUD</span>
+                        <span>Pack quantity</span>
+                    </div>
+                    <p>For a single item, leave the quantity set to 1.</p>
+                </div>
+                <div class="stock-formula-card">
+                    <span class="formula-step">03 / PRICE</span>
+                    <h3>Vending and ticket prices</h3>
+                    <div class="math-display">Vending = Unit cost × 1.30 → nearest $0.10</div>
+                    <div class="math-display">Tickets = Unit cost × 165 → ticket tier rounding</div>
+                    <p>Both values are based on the unrounded AUD cost of one item. Ticket rounding uses the original calculated ticket amount to choose the tier.</p>
+                </div>
+            </div>
+        </section>
+
+        <a class="back-link" href="lq-tools.html">← Back to LQ Tools</a>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-inner">
+            <strong>LASERQUEST · LQ HUB</strong>
+            <span>Internal operations resources</span>
+        </div>
+    </footer>
+</body>
+</html>
