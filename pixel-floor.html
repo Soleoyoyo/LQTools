@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="assets/css/motion.css">
     <link rel="stylesheet" href="assets/css/pixel-floor.css">
     <script src="assets/js/site.js" defer></script>
+    <script src="assets/js/floor-config.js" defer></script>
     <script src="assets/js/pixel-floor.js" defer></script>
 </head>
 <body>
@@ -72,7 +73,7 @@
                 <div class="total-chip"><strong id="totalTiles">270</strong><span>total tiles</span></div>
             </div>
             <div id="statusLegend" class="status-legend" aria-label="Status key and live counts"></div>
-            <p class="save-note">This chart is stored on the LQ Hub server and shared across devices. Pending edits are not published until you submit them.</p>
+            <p class="save-note">This chart is stored in a shared online database and synced across devices. Pending edits are not published until you submit them.</p>
         </section>
 
         <section class="floor-panel submission-panel" aria-labelledby="submission-heading">
@@ -84,14 +85,11 @@
                 </div>
                 <strong id="pendingCount" class="total-chip">0 pending</strong>
             </div>
+            <div id="floorSetupHelp" class="floor-setup-help" hidden></div>
             <div class="publish-controls">
                 <div class="publish-field">
                     <label for="editorName">Your name <span aria-hidden="true">*</span></label>
                     <input id="editorName" type="text" maxlength="70" autocomplete="name" placeholder="Enter your name" required>
-                </div>
-                <div class="publish-field" id="editorCodeWrap" hidden>
-                    <label for="editorCode">Editor access code</label>
-                    <input id="editorCode" type="password" autocomplete="off" placeholder="Access code (if required)">
                 </div>
                 <button id="publishFloor" class="publish-action" type="button" disabled>Publish floor update</button>
                 <button id="discardDraft" class="outline-action" type="button" disabled>Discard draft</button>

@@ -210,53 +210,8 @@ resetButton.addEventListener("click", () => {
     calculate();
 });
 
-// Build a dedicated print report using the actual test results.
-// Browser print allows saving a multipage PDF with no internet or PDF library.
-function preparePdfReport(result, gameName) {
-    const timestamp = new Intl.DateTimeFormat("en-AU", {
-        dateStyle: "long",
-        timeStyle: "short"
-    }).format(new Date());
-
-    const reportFields = {
-        reportGameName: gameName,
-        reportDate: `Exported ${timestamp}`,
-        reportPlayPrice: aud.format(result.price),
-        reportPlayCount: number.format(result.count),
-        reportTotalTickets: number.format(result.totalTickets),
-        reportAverageTickets: number.format(result.averageTickets),
-        reportAverageValue: aud.format(result.averageTicketValue),
-        reportPayoutPercentage: `${result.percentage.toFixed(2)}%`,
-        reportRevenue: aud.format(result.totalRevenue),
-        reportTicketValue: aud.format(result.totalTicketValue)
-    };
-
-    for (const [id, text] of Object.entries(reportFields)) {
-        document.getElementById(id).textContent = text;
-    }
-
-    const reportRows = document.getElementById("reportTicketRows");
-    const fragment = document.createDocumentFragment();
-
-    for (const [index, tickets] of result.tickets.entries()) {
-        const row = document.createElement("tr");
-
-        for (const value of [
-            String(index + 1),
-            number.format(tickets),
-            aud.format(tickets * TICKET_VALUE_AUD)
-        ]) {
-            const cell = document.createElement("td");
-            cell.textContent = value;
-            row.appendChild(cell);
-        }
-
-        fragment.appendChild(row);
-    }
-
-    reportRows.replaceChildren(fragment);
-}
-
+// Generate an actual PDF file on-device instead of opening the print dialog.
+// The local PDF generator is included with the website for offline use.
 exportPdfButton.addEventListener("click", () => {
     const name = gameNameInput.value.trim();
 
@@ -269,15 +224,13 @@ exportPdfButton.addEventListener("click", () => {
     const result = calculate();
     if (!result) return;
 
-    preparePdfReport(result, name);
-
-    // The print dialog uses the page title as the suggested PDF name.
-    const originalTitle = document.title;
-    document.title = `${name.replace(/[\\/:*?"<>|]/g, "-")} - Ticket Payout Report`;
-
-    // Print after the report has been added to the DOM.
-    window.print();
-    document.title = originalTitle;
+    try {
+        const pdf = window.LQPdfDownload.createTicketReport(result, name);
+        window.LQPdfDownload.download(pdf, name);
+        clearError();
+    } catch (error) {
+        showError(`Couldn't generate the PDF: ${error.message}`);
+    }
 });
 
 function closeTooltips() {

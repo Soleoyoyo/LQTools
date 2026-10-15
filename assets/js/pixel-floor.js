@@ -30,6 +30,17 @@ let ready=false;
 let activeTile=null, activeButton=null;
 let busy=false;
 const tileButtons=new Map(),legendCounts=new Map();
+const config = window.LQ_FLOOR_CONFIG || {};
+const dbUrl = String(config.supabaseUrl || "").replace(/\/$/, "");
+const dbKey = String(config.supabaseAnonKey || "");
+const configured = /^https:\/\/.+\.supabase\.co$/.test(dbUrl) &&
+    dbKey.length > 15 && !dbKey.includes("YOUR_");
+const setupHelp = document.getElementById("floorSetupHelp");
+if (!configured) {
+    setupHelp.hidden = false;
+    setupHelp.textContent = "Shared floor not connected yet. Follow SETUP-GITHUB-PAGES.md: create the Supabase database, run supabase-setup.sql and enter the project URL and publishable key in assets/js/floor-config.js.";
+}
+
 
 function currentStatus(tile) {return draft.get(tile) ?? savedTiles[tile];}
 function makeSwatch(status, cls) {const el=document.createElement("span");el.className=`${cls} status-${status}`;el.setAttribute("aria-hidden","true");return el;}
@@ -104,65 +115,118 @@ function openEditor(tile) {
     [...editorOptions.children].forEach(option=>option.setAttribute("aria-pressed",String(option.dataset.status===currentStatus(tile))));
     editor.hidden=false;positionEditor();
 }
-async function getJson(url,options) {
-    const response=await fetch(url,{cache:"no-store",...options});
-    const data=await response.json();
-    if(!response.ok){const e=new Error(data.error||`Request failed (${response.status})`);e.response=data;e.status=response.status;throw e;}
-    return data;
+async function dbRequest(path, options = {}) {
+    if (!configured) throw new Error("Supabase is not configured. See SETUP-GITHUB-PAGES.md.");
+    const response = await fetch(`${dbUrl}/rest/v1/${path}`, {
+        cache: "no-store",
+        ...options,
+        headers: {
+            apikey: dbKey,
+            Authorization: `Bearer ${dbKey}`,
+            "Content-Type": "application/json",
+            ...(options.headers || {})
+        }
+    });
+    const body = await response.json().catch(() => null);
+    if (!response.ok) {
+        const message = body?.message || body?.error || `HTTP ${response.status}`;
+        const error = new Error(message);
+        error.status = response.status;
+        error.response = body;
+        throw error;
+    }
+    return body;
 }
-async function refreshFloor(quiet=false) {
-    if(busy)return;
+
+async function refreshFloor(quiet = false) {
+    if (busy || !configured) return;
     try {
-        const data=await getJson("/api/floor");
-        savedTiles=data.tiles;
-        // Drafts are retained; server validates stale edits when publishing.
-        for(const [tile,status] of draft) if(savedTiles[tile]===status) draft.delete(tile);
-        ready=true;render();
+        const rows = await dbRequest("floor_state?select=tiles,version&id=eq.1");
+        if (!Array.isArray(rows) || rows.length !== 1) throw new Error("Floor database not initialised.");
+        const received = rows[0].tiles;
+        for (const tile of tileIds) {
+            if (!statusById.has(received[tile])) throw new Error(`Invalid saved tile ${tile}`);
+        }
+        savedTiles = received;
+        for (const [tile, status] of draft) {
+            if (savedTiles[tile] === status) draft.delete(tile);
+        }
+        ready = true;
+        render();
         await refreshHistory();
-        if(!quiet)publishMessage.textContent="Floor refreshed from server.";
-    } catch(e) {
-        ready=false;render();
-        saveStatus.textContent="Server connection unavailable";
-        if(!quiet)publishMessage.textContent=`Could not load shared chart: ${e.message}`;
+        if (!quiet) publishMessage.textContent = "Shared floor refreshed.";
+    } catch (error) {
+        ready = false;
+        render();
+        saveStatus.textContent = "Shared floor connection unavailable";
+        if (!quiet || !window.__floorLoadErrorShown) {
+            publishMessage.textContent = `Could not load floor: ${error.message}`;
+            window.__floorLoadErrorShown = true;
+        }
     }
 }
 function textEl(tag,cls,text) {const el=document.createElement(tag);if(cls)el.className=cls;el.textContent=text;return el;}
 async function refreshHistory() {
-    const data=await getJson("/api/floor/history");
+    const updates = await dbRequest("floor_updates?select=author,created_at,changes&order=created_at.desc&limit=60");
     floorHistory.replaceChildren();
-    if(!data.updates.length){floorHistory.append(textEl("p","empty-history","No floor updates have been published yet."));return;}
-    for(const item of data.updates) {
-        const row=textEl("article","history-entry","");
-        const top=textEl("div","history-top","");
-        top.append(textEl("strong",null,item.author),textEl("time",null,new Date(item.timestamp).toLocaleString("en-AU",{dateStyle:"medium",timeStyle:"short"})));
-        const desc=textEl("p",null,`${item.change_count} tile${item.change_count===1?"":"s"} changed`);
-        const detail=textEl("details",null,"");
-        detail.append(textEl("summary",null,"View changes"));
-        const list=textEl("ul",null,"");
-        for(const change of item.changes){list.append(textEl("li",null,`${change.tile}: ${statusById.get(change.from).label} → ${statusById.get(change.status).label}`));}
-        detail.append(list);row.append(top,desc,detail);floorHistory.append(row);
+    if (!updates.length) {
+        floorHistory.append(textEl("p", "empty-history", "No floor updates have been published yet."));
+        return;
+    }
+    for (const item of updates) {
+        const row = textEl("article", "history-entry", "");
+        const top = textEl("div", "history-top", "");
+        top.append(
+            textEl("strong", null, item.author),
+            textEl("time", null, new Date(item.created_at).toLocaleString("en-AU", {
+                dateStyle: "medium", timeStyle: "short"
+            }))
+        );
+        const desc = textEl("p", null, `${item.changes.length} tile${item.changes.length === 1 ? "" : "s"} changed`);
+        const detail = textEl("details", null, "");
+        detail.append(textEl("summary", null, "View changes"));
+        const list = textEl("ul", null, "");
+        for (const change of item.changes) {
+            list.append(textEl("li", null, `${change.tile}: ${statusById.get(change.from)?.label || change.from} → ${statusById.get(change.status)?.label || change.status}`));
+        }
+        detail.append(list);
+        row.append(top, desc, detail);
+        floorHistory.append(row);
     }
 }
+
 async function publish() {
-    if(!ready||busy||!draft.size)return;
-    const name=document.getElementById("editorName").value.trim();
-    if(name.length<2){publishMessage.textContent="Enter your name (at least 2 characters) before publishing.";document.getElementById("editorName").focus();return;}
-    const changes=[...draft].map(([tile,status])=>({tile,status,from:savedTiles[tile]}));
-    busy=true;render();publishMessage.textContent="Publishing changes…";
+    if (!ready || busy || !draft.size) return;
+    const nameInput = document.getElementById("editorName");
+    const name = nameInput.value.trim();
+    if (name.length < 2) {
+        publishMessage.textContent = "Enter your name (at least 2 characters) before publishing.";
+        nameInput.focus();
+        return;
+    }
+    const changes = [...draft].map(([tile, status]) => ({ tile, status, from: savedTiles[tile] }));
+    busy = true;
+    render();
+    publishMessage.textContent = "Publishing changes…";
     try {
-        const data=await getJson("/api/floor/updates",{method:"POST",headers:{"Content-Type":"application/json","X-Floor-Edit-Code":document.getElementById("editorCode").value},body:JSON.stringify({name,changes})});
-        savedTiles=data.tiles;draft.clear();
-        publishMessage.textContent=`Published ${data.saved} tile change${data.saved===1?"":"s"} as ${name}.`;
+        const data = await dbRequest("rpc/publish_floor_update", {
+            method: "POST",
+            body: JSON.stringify({ p_name: name, p_changes: changes })
+        });
+        savedTiles = data.tiles;
+        draft.clear();
+        publishMessage.textContent = `Published ${data.saved} tile change${data.saved === 1 ? "" : "s"} as ${name}.`;
         await refreshHistory();
-    } catch(e) {
-        if(e.status===409){
-            // Keep draft intact; display which tiles need review before resubmission.
-            publishMessage.textContent=`Conflict: ${e.response.conflicts.map(c=>c.tile).join(", ")} changed since you loaded the chart. Refresh and review your draft before retrying.`;
-        } else if(e.status===403){
-            document.getElementById("editorCodeWrap").hidden=false;
-            publishMessage.textContent="Publishing requires the editor access code. Enter it and retry.";
-        } else {publishMessage.textContent=`Update not saved: ${e.message}`;}
-    } finally {busy=false;render();}
+    } catch (error) {
+        if (error.message.includes("FLOOR_CONFLICT")) {
+            publishMessage.textContent = "Someone changed one of those tiles first. Your draft is preserved. Click Refresh, review the floor and try publishing again.";
+        } else {
+            publishMessage.textContent = `Update not saved: ${error.message}`;
+        }
+    } finally {
+        busy = false;
+        render();
+    }
 }
 
 grid.addEventListener("click",event=>{const tile=event.target.closest(".floor-tile");if(tile)openEditor(tile.dataset.tileId);});
@@ -180,5 +244,5 @@ document.getElementById("resetFloor").addEventListener("click",()=>{
 publishButton.addEventListener("click",publish);
 discardButton.addEventListener("click",()=>{if(!confirm("Discard all unpublished changes?"))return;draft.clear();render();publishMessage.textContent="Draft discarded.";});
 document.getElementById("refreshFloor").addEventListener("click",()=>refreshFloor(false));
-makeGrid();makeLegend();render();refreshFloor(true);
+makeGrid();makeLegend();render();refreshFloor(false);
 setInterval(()=>refreshFloor(true),10000);

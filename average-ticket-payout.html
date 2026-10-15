@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="assets/css/motion.css">
 
     <script src="assets/js/site.js" defer></script>
+    <script src="assets/js/pdf-download.js" defer></script>
     <script src="assets/js/average-ticket-payout.js" defer></script>
 </head>
 <body>
@@ -193,8 +194,7 @@
                     <span aria-hidden="true">&#8681;</span> EXPORT FINDINGS AS PDF
                 </button>
                 <p class="payout-export-hint">
-                    Opens your browser's print window. Choose <strong>Save as PDF</strong>
-                    to keep a report containing every test play.
+                    Downloads a PDF file directly, including every test play. Works on phones, tablets and computers.
                 </p>
 
                 <p class="payout-footnote">
@@ -228,39 +228,6 @@
             </div>
         </section>
     </main>
-
-    <!-- Print-only report, filled using the current test results. -->
-    <article id="payoutPrintReport" class="payout-print-report" aria-label="Ticket payout test report">
-        <header class="print-report-header">
-            <div class="print-report-brand">LQ <span>LASERQUEST / TEST REPORT</span></div>
-            <h1>Average Ticket Payout Report</h1>
-            <h2 id="reportGameName"></h2>
-            <p id="reportDate"></p>
-        </header>
-
-        <section class="print-report-summary">
-            <div><span>Play price</span><strong id="reportPlayPrice"></strong></div>
-            <div><span>Test plays</span><strong id="reportPlayCount"></strong></div>
-            <div><span>Total tickets won</span><strong id="reportTotalTickets"></strong></div>
-            <div><span>Average tickets / play</span><strong id="reportAverageTickets"></strong></div>
-            <div><span>Average ticket value / play</span><strong id="reportAverageValue"></strong></div>
-            <div><span>Ticket payout percentage</span><strong id="reportPayoutPercentage"></strong></div>
-            <div><span>Total test revenue</span><strong id="reportRevenue"></strong></div>
-            <div><span>Total prize value</span><strong id="reportTicketValue"></strong></div>
-        </section>
-
-        <section class="print-report-results">
-            <h3>Ticket winnings — every play</h3>
-            <table>
-                <thead><tr><th scope="col">Play</th><th scope="col">Tickets won</th><th scope="col">Ticket value (AUD)</th></tr></thead>
-                <tbody id="reportTicketRows"></tbody>
-            </table>
-        </section>
-        <p class="print-report-footer">
-            Ticket value: $0.01 AUD each. Payout % = (average tickets × $0.01 ÷ play price) × 100.
-            Testing results are indicative, not a guarantee of long-term performance.
-        </p>
-    </article>
 
     <template id="ticketEntryTemplate">
         <div class="ticket-entry">

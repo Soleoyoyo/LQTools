@@ -340,3 +340,16 @@
 .history-entry ul {margin:10px 0 0;padding-left:20px;font-size:11px;line-height:1.8;}
 .empty-history {color:var(--muted);font-size:12px;}
 .publish-field[hidden] {display:none;}
+
+/* GitHub Pages / Supabase setup notice */
+.floor-setup-help {
+    background: #fff0f1;
+    border-left: 4px solid #e31b23;
+    padding: 15px 18px;
+    margin-bottom: 20px;
+    color: #50242a;
+    font-size: 13px;
+    line-height: 1.65;
+}
+.floor-setup-help[hidden] { display: none; }
+.floor-setup-help code { font-weight: 700; }
