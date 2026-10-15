@@ -341,8 +341,8 @@
 .empty-history {color:var(--muted);font-size:12px;}
 .publish-field[hidden] {display:none;}
 
-/* GitHub Pages / Supabase setup notice */
-.floor-setup-help {
+/* Warning shown only when the shared floor is unreachable. */
+.floor-connection-warning {
     background: #fff0f1;
     border-left: 4px solid #e31b23;
     padding: 15px 18px;
@@ -351,5 +351,7 @@
     font-size: 13px;
     line-height: 1.65;
 }
-.floor-setup-help[hidden] { display: none; }
-.floor-setup-help code { font-weight: 700; }
+.floor-connection-warning[hidden] { display: none; }
+.floor-connection-warning strong { display: block; font-size: 13px; margin-bottom: 6px; }
+.floor-connection-warning p { margin: 0 0 12px; }
+.floor-connection-warning .outline-action { background: #fff; }

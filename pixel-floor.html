@@ -85,7 +85,11 @@
                 </div>
                 <strong id="pendingCount" class="total-chip">0 pending</strong>
             </div>
-            <div id="floorSetupHelp" class="floor-setup-help" hidden></div>
+            <div id="floorConnectionWarning" class="floor-connection-warning" role="alert" hidden>
+                <strong>Server unreachable — changes will not be saved.</strong>
+                <p>The shared floor cannot be reached right now. Any changes you make will remain on this device as an unpublished draft until you reconnect and publish them.</p>
+                <button id="retryFloorConnection" type="button" class="outline-action">Retry connection</button>
+            </div>
             <div class="publish-controls">
                 <div class="publish-field">
                     <label for="editorName">Your name <span aria-hidden="true">*</span></label>

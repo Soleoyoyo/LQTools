@@ -35,11 +35,17 @@ const dbUrl = String(config.supabaseUrl || "").replace(/\/$/, "");
 const dbKey = String(config.supabaseAnonKey || "");
 const configured = /^https:\/\/.+\.supabase\.co$/.test(dbUrl) &&
     dbKey.length > 15 && !dbKey.includes("YOUR_");
-const setupHelp = document.getElementById("floorSetupHelp");
-if (!configured) {
-    setupHelp.hidden = false;
-    setupHelp.textContent = "Shared floor not connected yet. Follow SETUP-GITHUB-PAGES.md: create the Supabase database, run supabase-setup.sql and enter the project URL and publishable key in assets/js/floor-config.js.";
+const connectionWarning = document.getElementById("floorConnectionWarning");
+const retryConnectionButton = document.getElementById("retryFloorConnection");
+let hasLoadedFloor = false;
+let connectionChecked = false;
+
+function setConnected(connected) {
+    ready = connected;
+    connectionWarning.hidden = connected || !connectionChecked;
+    render();
 }
+
 
 
 function currentStatus(tile) {return draft.get(tile) ?? savedTiles[tile];}
@@ -85,12 +91,12 @@ function render() {
     STATUSES.forEach(s=>legendCounts.get(s.id).textContent=String(counts[s.id]));
     pendingCount.textContent=`${draft.size} pending`;
     publishButton.disabled=!ready||busy||draft.size===0;
-    discardButton.disabled=!ready||busy||draft.size===0;
-    document.getElementById("resetFloor").disabled=!ready||busy;
-    saveStatus.textContent=!ready?"Connecting to shared floor…":draft.size?`${draft.size} unsaved change${draft.size===1?"":"s"}`:"Shared floor up to date";
+    discardButton.disabled=!hasLoadedFloor||busy||draft.size===0;
+    document.getElementById("resetFloor").disabled=!hasLoadedFloor||busy;
+    saveStatus.textContent=!ready?(connectionChecked?(hasLoadedFloor?"Server unreachable — draft only":"Server unreachable — floor unavailable"):"Connecting to shared floor…"):draft.size?`${draft.size} unsaved change${draft.size===1?"":"s"}`:"Shared floor up to date";
 }
 function stage(tile,status) {
-    if (!ready||busy) return;
+    if (!hasLoadedFloor||busy) return;
     if(status===savedTiles[tile]) draft.delete(tile);
     else draft.set(tile,status);
     publishMessage.textContent="";
@@ -108,7 +114,7 @@ function closeEditor(focus=false) {
     activeTile=null;activeButton=null;editor.hidden=true;
 }
 function openEditor(tile) {
-    if(!ready||busy)return;
+    if(!hasLoadedFloor||busy)return;
     if(activeTile===tile){closeEditor();return;}
     closeEditor();activeTile=tile;activeButton=tileButtons.get(tile);
     editorTitle.textContent=`Tile ${tile}`;activeButton.setAttribute("aria-pressed","true");activeButton.setAttribute("aria-expanded","true");
@@ -116,7 +122,7 @@ function openEditor(tile) {
     editor.hidden=false;positionEditor();
 }
 async function dbRequest(path, options = {}) {
-    if (!configured) throw new Error("Supabase is not configured. See SETUP-GITHUB-PAGES.md.");
+    if (!configured) throw new Error("Shared floor connection unavailable.");
     const response = await fetch(`${dbUrl}/rest/v1/${path}`, {
         cache: "no-store",
         ...options,
@@ -139,7 +145,12 @@ async function dbRequest(path, options = {}) {
 }
 
 async function refreshFloor(quiet = false) {
-    if (busy || !configured) return;
+    if (busy) return;
+    if (!configured) {
+        connectionChecked = true;
+        setConnected(false);
+        return;
+    }
     try {
         const rows = await dbRequest("floor_state?select=tiles,version&id=eq.1");
         if (!Array.isArray(rows) || rows.length !== 1) throw new Error("Floor database not initialised.");
@@ -151,16 +162,21 @@ async function refreshFloor(quiet = false) {
         for (const [tile, status] of draft) {
             if (savedTiles[tile] === status) draft.delete(tile);
         }
-        ready = true;
-        render();
-        await refreshHistory();
+        hasLoadedFloor = true;
+        connectionChecked = true;
+        setConnected(true);
+        try {
+            await refreshHistory();
+        } catch (historyError) {
+            // A history loading error should not block editing when the floor itself loaded.
+            console.warn("Floor update history unavailable:", historyError);
+        }
         if (!quiet) publishMessage.textContent = "Shared floor refreshed.";
     } catch (error) {
-        ready = false;
-        render();
-        saveStatus.textContent = "Shared floor connection unavailable";
+        connectionChecked = true;
+        setConnected(false);
         if (!quiet || !window.__floorLoadErrorShown) {
-            publishMessage.textContent = `Could not load floor: ${error.message}`;
+            publishMessage.textContent = "Unable to reach the shared floor. Please retry when the connection is restored.";
             window.__floorLoadErrorShown = true;
         }
     }
@@ -221,7 +237,9 @@ async function publish() {
         if (error.message.includes("FLOOR_CONFLICT")) {
             publishMessage.textContent = "Someone changed one of those tiles first. Your draft is preserved. Click Refresh, review the floor and try publishing again.";
         } else {
-            publishMessage.textContent = `Update not saved: ${error.message}`;
+            // A failed request can have an uncertain outcome, so keep the draft until refreshed.
+            publishMessage.textContent = `Unable to confirm the update: ${error.message}. Reconnect and refresh before publishing again.`;
+            if (!error.status) setConnected(false);
         }
     } finally {
         busy = false;
@@ -244,5 +262,8 @@ document.getElementById("resetFloor").addEventListener("click",()=>{
 publishButton.addEventListener("click",publish);
 discardButton.addEventListener("click",()=>{if(!confirm("Discard all unpublished changes?"))return;draft.clear();render();publishMessage.textContent="Draft discarded.";});
 document.getElementById("refreshFloor").addEventListener("click",()=>refreshFloor(false));
+retryConnectionButton.addEventListener("click", () => refreshFloor(false));
+window.addEventListener("offline", () => setConnected(false));
+window.addEventListener("online", () => refreshFloor(false));
 makeGrid();makeLegend();render();refreshFloor(false);
 setInterval(()=>refreshFloor(true),10000);
