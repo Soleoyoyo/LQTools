@@ -4,12 +4,12 @@
 const COLUMNS = Array.from({length:15},(_,i)=>String.fromCharCode(65+i));
 const STATUSES = [
     {id:"healthy", label:"Healthy"},
-    {id:"poor", label:"Poor Health"},
-    {id:"replace", label:"Needs Replacing"},
-    {id:"replaced", label:"Has Been Replaced"},
-    {id:"multiple", label:"Has Been Replaced Multiple Times"},
-    {id:"replaced-poor", label:"Has Been Replaced and Has Poor Health"},
-    {id:"replaced-replace", label:"Has Been Replaced and Needs Replacing Again"}
+    {id:"poor", label:"Poor Condition"},
+    {id:"replace", label:"Replacement Needed"},
+    {id:"replaced", label:"Previously Replaced"},
+    {id:"multiple", label:"Replaced Multiple Times"},
+    {id:"replaced-poor", label:"Previously Replaced — Poor Condition"},
+    {id:"replaced-replace", label:"Previously Replaced — Needs Replacement Again"}
 ];
 const statusById = new Map(STATUSES.map(s=>[s.id,s]));
 const tileIds = Array.from({length:18},(_,r)=>COLUMNS.map(c=>`${c}${r+1}`)).flat();
@@ -101,7 +101,6 @@ function render() {
     pendingCount.textContent=`${draft.size} pending`;
     publishButton.disabled=!ready||busy||draft.size===0;
     discardButton.disabled=!hasLoadedFloor||busy||draft.size===0;
-    document.getElementById("resetFloor").disabled=!hasLoadedFloor||busy;
     saveStatus.textContent=!ready?(connectionChecked?(hasLoadedFloor?"Server unreachable — draft only":"Server unreachable — floor unavailable"):"Connecting to shared floor…"):draft.size?`${draft.size} unsaved change${draft.size===1?"":"s"}`:"Shared floor up to date";
 }
 function stage(tile,status) {
@@ -271,10 +270,6 @@ document.addEventListener("keydown",event=>{if(event.key==="Escape"&&!editor.hid
 window.addEventListener("resize",positionEditor);
 document.querySelector(".floor-scroll").addEventListener("scroll",()=>closeEditor(),{passive:true});
 window.addEventListener("scroll",()=>closeEditor(),{passive:true});
-document.getElementById("resetFloor").addEventListener("click",()=>{
-    if(!confirm("Mark all 270 tiles Healthy in your draft? You must still publish this change with your name."))return;
-    closeEditor();tileIds.forEach(tile=>stage(tile,"healthy"));render();
-});
 publishButton.addEventListener("click",publish);
 discardButton.addEventListener("click",()=>{if(!confirm("Discard all unpublished changes?"))return;draft.clear();render();publishMessage.textContent="Draft discarded.";});
 document.getElementById("refreshFloor").addEventListener("click",()=>refreshFloor(false));
