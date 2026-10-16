@@ -1,15 +1,35 @@
-# LQ Hub
+# LQ Hub — Pixel Floor connection fix and prize quantities
 
-Static website for GitHub Pages, with four tools and an Instructions section.
+Open `index.html` after deploying on GitHub Pages.
 
-Start with `index.html`. See **SETUP-GITHUB-PAGES.md** to activate the shared Pixel Floor Chart using Supabase.
+## IMPORTANT: Keep your working Supabase configuration
 
-The Pixel Floor Chart cannot become shared/live until you create the Supabase project, run `supabase-setup.sql`, and fill in `assets/js/floor-config.js`. No Node server is needed on GitHub Pages.
+**This ZIP intentionally does not contain `assets/js/floor-config.js`.**
+It contains `assets/js/floor-config.example.js` as a reference only.
 
-The Average Ticket Payout Calculator exports an actual downloadable PDF on desktop and mobile, containing every recorded play.
+If your GitHub repo already has a working `assets/js/floor-config.js`, **do not delete or replace it**.
+Upload the updated pages and assets without deleting the existing file. GitHub Pages will use that existing configuration.
 
-## Connection warning update
+If your site still shows “Server unreachable”, open `https://YOUR_GITHUB_PAGES_SITE/assets/js/floor-config.js` (adjust for your repository path) and check that it serves your configured file, not placeholder values. Check the browser Console for `Pixel Floor connection failed:` messages. Do not share passwords or secret/service-role keys.
 
-Pixel Floor Chart now shows **Server unreachable — changes will not be saved.** when Supabase cannot be contacted or its connection details are missing. The old setup-specific warning has been removed. The warning disappears when a refresh succeeds; the page retries every 10 seconds and offers a Retry connection button. Previously loaded floor tiles can still be edited offline as local **unpublished drafts**, but Publish stays disabled until reconnection. Reloading the page while offline will discard those drafts.
+If you replaced your working configuration in a previous upload, restore it from your GitHub commit history, or recreate it using your existing Supabase project URL and *publishable* key. Both values must be quoted strings.
 
-**Deployment:** If your GitHub Pages version already has working Supabase values in `assets/js/floor-config.js`, keep that existing configured file when uploading this update. The packaged configuration contains placeholders only; do not replace your working settings with it.
+## Game Settings Calculator: multiple identical prizes
+
+Each prize now has a **Quantity Loaded** field. Leaving it blank means 1. The combined vending price is `sum(vending price × quantity)` for each entry. The existing VIP play price, payout multiplier and 0.30 rounding policy are unchanged.
+
+Examples:
+- 3 items at $9.00 and 2 items at $4.00 = $35.00 combined vending price.
+- Price of play $3.00 and desired payout 30% -> raw setting 43.2099... -> final setting 43.
+
+## Files changed
+
+- `game-settings.html`
+- `assets/js/calculator.js`
+- `assets/css/calculator.css`
+- `assets/js/pixel-floor.js`
+- `README.md`
+
+Everything else remains part of the website, including PDF export and all four tools.
+
+The Pixel Floor still needs an existing, correctly configured Supabase project and a working `assets/js/floor-config.js` in the deployed repository. Local standalone HTML files do not provide a shared database.

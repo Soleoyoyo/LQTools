@@ -51,3 +51,8 @@ Because the generator is bundled, it works with or without internet access once 
 - `supabase-setup.sql` — initialise database and atomic publishing RPC
 
 All other calculators and styles are preserved.
+
+
+### Subsequent LQ Hub updates
+
+Do not overwrite or delete your configured `assets/js/floor-config.js` during updates. New packages deliberately omit this file and include `floor-config.example.js` instead.

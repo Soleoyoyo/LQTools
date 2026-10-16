@@ -635,3 +635,8 @@ input::-webkit-inner-spin-button,input::-webkit-outer-spin-button {
     color: #fff;
     border-color: var(--red);
 }
+
+/* Quantity uses the same pale-red input styling as all other calculator fields. */
+.prize-quantity {
+    padding-left: 13px !important;
+}

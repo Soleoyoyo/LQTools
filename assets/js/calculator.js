@@ -3,7 +3,8 @@
 /**
  * LQ Tools — Game Settings Calculator
  *
- * Every prize's vending price is added together to produce ONE machine setting.
+ * Each prize contributes its vending price multiplied by quantity.
+ * All entries are combined to produce ONE machine setting.
  * VIP price = normal play price × 0.90.
  * Multiplier = 100 / desired payout percentage.
  * A decimal portion of 0.30 or less rounds down; anything higher rounds up.
@@ -37,6 +38,10 @@ function readNumber(value) {
     return String(value).trim() === '' ? NaN : Number(value);
 }
 
+function readQuantity(value) {
+    return String(value).trim() === '' ? 1 : Number(value);
+}
+
 function roundSetting(value) {
     const whole = Math.floor(value);
     const fraction = value - whole;
@@ -66,9 +71,9 @@ function refreshPrizeNumbers() {
         `${prizes.length} ${prizes.length === 1 ? 'PRIZE' : 'PRIZES'}`;
 }
 
-function addPrize(name = '', price = '') {
+function addPrize(name = '', price = '', quantity = '') {
     const id = nextPrizeId++;
-    prizes.push({ id, name, price: String(price) });
+    prizes.push({ id, name, price: String(price), quantity: String(quantity) });
 
     // The markup and vending-price help text are maintained in game-settings.html.
     const fragment = prizeTemplate.content.cloneNode(true);
@@ -77,11 +82,15 @@ function addPrize(name = '', price = '') {
 
     const nameInput = row.querySelector('.prize-name');
     const priceInput = row.querySelector('.prize-price');
+    const quantityInput = row.querySelector('.prize-quantity');
+    const quantityLabel = row.querySelector('.prize-quantity-label');
     const tooltip = row.querySelector('.help-tooltip');
     const tooltipButton = row.querySelector('.help-button');
 
     nameInput.id = `prizeName-${id}`;
     priceInput.id = `prizePrice-${id}`;
+    quantityInput.id = `prizeQuantity-${id}`;
+    quantityLabel.htmlFor = quantityInput.id;
     tooltip.id = `prizeHelp-${id}`;
 
     row.querySelector('.prize-name-label').htmlFor = nameInput.id;
@@ -89,8 +98,15 @@ function addPrize(name = '', price = '') {
     tooltipButton.setAttribute('aria-controls', tooltip.id);
     tooltipButton.setAttribute('aria-expanded', 'false');
 
+    const quantityButton = row.querySelectorAll('.help-button')[1];
+    const quantityTooltip = row.querySelectorAll('.help-tooltip')[1];
+    quantityTooltip.id = `prizeQuantityHelp-${id}`;
+    quantityButton.setAttribute('aria-controls', quantityTooltip.id);
+    quantityButton.setAttribute('aria-expanded', 'false');
+
     nameInput.value = name;
     priceInput.value = String(price);
+    quantityInput.value = String(quantity);
     prizeList.append(fragment);
 
     // Animate only newly added rows, not the initial default prize.
@@ -119,8 +135,9 @@ function renderPrizeSummary() {
 
         const price = document.createElement('strong');
         const value = readNumber(prize.price);
-        price.textContent = Number.isFinite(value) && value >= 0
-            ? formatMoney(value)
+        const qty = readQuantity(prize.quantity);
+        price.textContent = Number.isFinite(value) && value >= 0 && Number.isSafeInteger(qty) && qty >= 1
+            ? `${qty} × ${formatMoney(value)} = ${formatMoney(Math.round(value * 100) * qty / 100)}`
             : '—';
 
         row.append(name, price);
@@ -167,13 +184,19 @@ function calculate() {
 
     for (const prize of prizes) {
         const price = readNumber(prize.price);
+        const quantity = readQuantity(prize.quantity);
+
+        if (!Number.isSafeInteger(quantity) || quantity < 1) {
+            invalidate('Quantity must be a whole number of at least 1 for every prize.');
+            return;
+        }
 
         if (!Number.isFinite(price) || price < 0) {
             invalidate('Enter a valid vending price for every prize.');
             return;
         }
 
-        totalCents += Math.round((price + Number.EPSILON) * 100);
+        totalCents += Math.round((price + Number.EPSILON) * 100) * quantity;
     }
 
     const totalVendingPrice = totalCents / 100;
@@ -223,6 +246,7 @@ prizeList.addEventListener('input', (event) => {
 
     prize.name = row.querySelector('.prize-name').value;
     prize.price = row.querySelector('.prize-price').value;
+    prize.quantity = row.querySelector('.prize-quantity').value;
     calculate();
 });
 

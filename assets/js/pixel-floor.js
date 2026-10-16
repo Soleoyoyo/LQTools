@@ -40,9 +40,18 @@ const retryConnectionButton = document.getElementById("retryFloorConnection");
 let hasLoadedFloor = false;
 let connectionChecked = false;
 
-function setConnected(connected) {
+function setConnected(connected, reason = '') {
     ready = connected;
     connectionWarning.hidden = connected || !connectionChecked;
+
+    if (!connected && connectionChecked) {
+        const description = connectionWarning.querySelector('p');
+        description.textContent = reason || (
+            'The shared floor could not be reached. Publishing is unavailable. ' +
+            'If the floor loaded previously, you can continue making unpublished edits and retry later.'
+        );
+    }
+
     render();
 }
 
@@ -148,7 +157,11 @@ async function refreshFloor(quiet = false) {
     if (busy) return;
     if (!configured) {
         connectionChecked = true;
-        setConnected(false);
+        setConnected(false,
+            'This website is missing its Supabase connection settings. ' +
+            'Keep your working assets/js/floor-config.js file when updating the website. ' +
+            'Changes cannot be published until the connection is restored.'
+        );
         return;
     }
     try {
@@ -174,11 +187,14 @@ async function refreshFloor(quiet = false) {
         if (!quiet) publishMessage.textContent = "Shared floor refreshed.";
     } catch (error) {
         connectionChecked = true;
-        setConnected(false);
-        if (!quiet || !window.__floorLoadErrorShown) {
-            publishMessage.textContent = "Unable to reach the shared floor. Please retry when the connection is restored.";
-            window.__floorLoadErrorShown = true;
-        }
+        console.error('Pixel Floor connection failed:', error);
+        const reason = error.status
+            ? `The floor server responded with HTTP ${error.status}: ${error.message}. ` +
+              'Check database permissions and API configuration.'
+            : `Could not contact the shared floor: ${error.message}. ` +
+              'Check your internet connection and try again.';
+        setConnected(false, reason);
+        if (!quiet) publishMessage.textContent = reason;
     }
 }
 function textEl(tag,cls,text) {const el=document.createElement(tag);if(cls)el.className=cls;el.textContent=text;return el;}
